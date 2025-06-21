@@ -3,8 +3,9 @@
 A web application developed with the help of generative AI.
 
 <p align="center">
-    <img alt="logo" title="Project-Logo" src="./.gitAssets/project-logo.png" width="90%" />
+    <img alt="logo" title="Project-Logo" src="./.gitAssets/project-logo.png" width="30%" />
 </p>
+
 
 Demo available in [https://dio-coin-market-app.vercel.app/](https://dio-coin-market-app.vercel.app)
 
@@ -17,7 +18,7 @@ Demo available in [https://dio-coin-market-app.vercel.app/](https://dio-coin-mar
 
 ## Projetct eBook
 
-All the development of this project and its technologies are available in this [eBook](./.gitAssests/project-eBook.pdf).
+All the development of this project and its technologies are available in this [eBook](./.gitAssets/project-eBook.pdf).
 
 ## License
 
