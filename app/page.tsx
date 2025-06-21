@@ -1,95 +1,60 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// app/page.tsx
+'use client';
+
+import useSWR from 'swr';
+import { fetcher } from '@/lib/fetcher';
+import { excludeStablecoins } from '@/lib/filterStablecoins';
+
+type Coin = {
+  id: string;
+  name: string;
+  symbol: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+  price_change_percentage_7d_in_currency: number;
+};
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const { data, error, isLoading } = useSWR<Coin[]>(
+    'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=30&page=1&sparkline=false&price_change_percentage=7d',
+    fetcher,
+    { refreshInterval: 60000 }
+  );
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  if (error) return <p className="text-danger">Failed to load data</p>;
+  if (isLoading) return <p>Loading...</p>;
+
+  const coins = excludeStablecoins(data ?? []).slice(0, 20);
+
+  return (
+    <div className="container py-5">
+      <h1 className="mb-4">Top 20 Cryptocurrencies (No Stablecoins)</h1>
+      <table className="table table-dark table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Symbol</th>
+            <th>Price (USD)</th>
+            <th>Change (24h)</th>
+            <th>Change (7d)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {coins.map((coin) => (
+            <tr key={coin.id}>
+              <td>{coin.name}</td>
+              <td>{coin.symbol.toUpperCase()}</td>
+              <td>${coin.current_price.toLocaleString()}</td>
+              <td className={coin.price_change_percentage_24h > 0 ? 'text-success' : 'text-danger'}>
+                {coin.price_change_percentage_24h.toFixed(2)}%
+              </td>
+              <td className={coin.price_change_percentage_7d_in_currency > 0 ? 'text-success' : 'text-danger'}>
+                {coin.price_change_percentage_7d_in_currency.toFixed(2)}%
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
